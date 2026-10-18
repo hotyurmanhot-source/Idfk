@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NexusV1 Studio</title>
+<style>
+:root{--bg:#050711;--panel:#0b1221;--panel2:#101b2e;--line:#22314b;--text:#edf4ff;--muted:#91a3c2;--blue:#438cff;--cyan:#53ddff;--green:#4cf0b0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,Arial,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 75% 5%,#183d793b,transparent 45%),radial-gradient(ellipse at 10% 80%,#49227b20,transparent 40%)}
+.topbar{height:70px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 22px;background:#070b16ed;backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(145deg,#17427c,#0b1325);border:1px solid #438cff77;color:var(--cyan);font-size:23px}.brand strong{font-size:20px;letter-spacing:-.7px}.brand strong span{color:var(--blue)}.muted{color:var(--muted)}.tiny{font-size:11px;line-height:1.6}
+.actions,.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn,.nav-link,.file-tab,.mode-card{border:1px solid var(--line);border-radius:9px;background:var(--panel2);padding:10px 13px;transition:.18s}
+.btn:hover,.nav-link:hover,.file-tab:hover,.mode-card:hover{border-color:#438cff99}.btn.primary{background:var(--blue);border-color:var(--blue);color:white}.btn.ghost{background:transparent}
+.layout{display:block;min-height:calc(100vh - 70px)}
+.sidebar{position:sticky;top:70px;z-index:9;padding:9px 18px;background:#080d19ed;backdrop-filter:blur(16px);border-bottom:1px solid var(--line);display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:16px}
+.nav-label{display:none}
+.sidebar nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.nav-link{display:flex;align-items:center;gap:8px;width:auto;text-align:left;background:transparent;border-color:transparent;color:#a1b1ce;margin:0}.nav-link .ico{width:22px;text-align:center;font-size:17px}.nav-link.active{background:#14294a;border-color:#438cff70;color:white}.nav-link.active .ico{color:var(--cyan)}
+.sidebar-bottom{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#0b1323;white-space:nowrap}.sidebar-bottom p{display:none}.status{display:flex;align-items:center;gap:8px}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}
+.content{padding:23px;min-width:0;max-width:1800px;width:100%;margin:auto}.page{display:none;animation:enter .2s ease}.page.active{display:block}@keyframes enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.page-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:1.7px;font-weight:800}h1{font-size:29px;letter-spacing:-1px;margin:7px 0}h2{font-size:16px;margin:0}h3{font-size:13px;margin:0}.subtitle{font-size:12px;color:var(--muted);line-height:1.7}
+.panel{min-width:0;overflow:hidden;background:linear-gradient(145deg,#0c1425f5,#080e1bf5);border:1px solid var(--line);border-radius:14px}.panel-head{padding:15px 17px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line)}.panel-body{padding:17px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.s12{grid-column:span 12}.s8{grid-column:span 8}.s7{grid-column:span 7}.s6{grid-column:span 6}.s5{grid-column:span 5}.s4{grid-column:span 4}
+.hero{position:relative;overflow:hidden;padding:27px;min-height:200px;background:radial-gradient(ellipse at 85% 30%,#1e58b950,transparent 42%),linear-gradient(125deg,#101d37,#080e1c 70%)}.hero:after{content:"◉";position:absolute;right:28px;top:4px;font-size:125px;color:#69b7ff12;pointer-events:none}.hero h2{font-size:34px;letter-spacing:-1.5px;margin:10px 0}.hero p{max-width:480px;color:#a7b8d6;line-height:1.7}.hero .toolbar{margin-top:18px}
+.stat{padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px}.stat-label{color:var(--muted);font-size:11px}.stat-value{font-size:25px;font-weight:800;margin:8px 0 3px}.green{color:var(--green);font-size:11px}
+.pill{display:inline-block;padding:5px 8px;border:1px solid #438cff45;border-radius:20px;background:#438cff12;color:#a9caff;font-size:10px}
+.mode-card{display:block;width:100%;min-height:175px;text-align:left;padding:19px;background:#0b1425}.mode-card.selected{background:#102345;border-color:var(--blue)}.mode-icon{font-size:27px;margin-bottom:15px}.mode-card p{font-size:12px;line-height:1.7;color:var(--muted)}.mode-card .btn{display:block;width:100%;text-align:center;margin-top:12px}
+input[type=text],input[type=url],select{width:100%;min-width:0;background:#080f1e;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px}label{display:block;color:#bdcce4;font-size:12px;margin-bottom:7px}.field{margin-bottom:15px}
+.filebar{display:flex;gap:5px;padding:8px;background:#080e1a;border-bottom:1px solid var(--line);overflow:auto}.file-tab{white-space:nowrap;background:transparent;border-color:transparent;color:var(--muted)}.file-tab.active{background:#15233a;border-color:var(--line);color:white}
+.editor-area{display:flex;min-height:370px;background:#060b14}#lineNumbers{width:42px;flex-shrink:0;padding:13px 8px;text-align:right;white-space:pre;overflow:hidden;color:#566a89;font:12px/1.75 monospace;user-select:none}#code{flex:1;width:0;min-width:0;min-height:370px;resize:vertical;background:transparent;border:0;border-radius:0;outline:none;padding:13px 9px;color:#b8d5ff;font:12px/1.75 monospace;tab-size:2;white-space:pre;overflow:auto}
+.editor-status{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 13px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}
+.preview-frame{display:block;width:100%;height:390px;border:0;background:#060a13}.lua-preview{height:390px;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at center,#113975,#050914 70%)}.lua-card{width:min(310px,100%);padding:25px;background:#08111f;border:1px solid var(--blue);border-radius:16px;text-align:center;box-shadow:0 0 40px #087cff26}.lua-card h2{font-size:26px;margin-bottom:25px}.lua-card button{width:100%;background:#087cff;color:white;border:0;border-radius:8px;padding:13px}
+.console{height:125px;overflow:auto;padding:12px;font:12px/1.8 monospace;color:#a8c5ef;overflow-wrap:anywhere}.log-info{color:#64b8ff}.log-success{color:var(--green)}.log-error{color:#ff8282}
+.option-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.option-row:last-child{border-bottom:0}input[type=checkbox]{accent-color:var(--blue);width:16px;height:16px}input[type=color]{width:44px;height:36px;background:transparent;border:0}
+#toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,15px);padding:12px 17px;border:1px solid #2c5488;background:#101c31;border-radius:10px;opacity:0;pointer-events:none;transition:.2s;z-index:30}#toast.show{opacity:1;transform:translate(-50%,0)}
+body.light{--bg:#edf2fb;--panel:#fff;--panel2:#f5f7fc;--line:#d5dfed;--text:#17233b;--muted:#687b98}body.light .topbar,body.light .sidebar{background:#ffffffed}body.light .panel,body.light .stat,body.light .mode-card{background:#fff}body.light .nav-link{color:#536580}body.light .nav-link.active{background:#e5efff;color:#143a76}body.light input[type=text],body.light input[type=url],body.light select{background:#fff}body.light .editor-area,body.light .filebar{background:#f5f7fc}body.light #code{color:#174987}body.light .file-tab.active{background:#e7eef9;color:#18304f}
+@media(max-width:1050px){.content{padding:15px}.s8,.s7{grid-column:span 12}.s5,.s4{grid-column:span 6}}
+@media(max-width:680px){.topbar{height:auto;min-height:65px;padding:12px;flex-wrap:wrap}.brand strong{font-size:18px}.top-actions{width:100%}.top-actions .btn{flex:1}.sidebar{position:sticky;top:0;padding:7px 9px;display:block}.sidebar nav{display:flex;overflow-x:auto;gap:4px;flex-wrap:nowrap}.sidebar-bottom{display:none}.nav-link{white-space:nowrap;width:auto;margin:0;padding:10px}.nav-link .ico{width:auto}.content{padding:12px}h1{font-size:25px}.s6,.s5,.s4{grid-column:span 12}.hero{padding:20px}.hero h2{font-size:28px}.editor-area,#code{min-height:300px}}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<header class="topbar">
+ <div class="brand"><div class="logo">◉</div><div><strong>Nexus<span>V1</span> Studio</strong><div class="tiny muted">CREATIVE DEVELOPMENT WORKSPACE</div></div></div>
+ <div class="actions top-actions"><button type="button" class="btn" id="themeBtn">☾ Theme</button><button type="button" class="btn" id="saveBtn">Save settings</button><button type="button" class="btn primary" id="topRun">▶ Run project</button></div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+ <nav>
+  <div class="nav-label">WORKSPACE</div>
+  <button type="button" class="nav-link active" data-page="home"><span class="ico">⌂</span> Overview</button>
+  <button type="button" class="nav-link" data-page="editor"><span class="ico">⌘</span> Code Editor</button>
+  <button type="button" class="nav-link" data-page="preview"><span class="ico">◫</span> Live Preview</button>
+  <button type="button" class="nav-link" data-page="modes"><span class="ico">◈</span> Modes</button>
+  <button type="button" class="nav-link" data-page="settings"><span class="ico">⚙</span> Settings</button>
+ </nav>
+ <div class="sidebar-bottom"><div class="status"><span class="dot"></span> Studio ready</div><p class="tiny muted">NexusV1 local workspace</p><div class="tiny muted" id="sideMode">Active: Roblox Luau</div></div>
+</aside>
+<main class="content">
+<section class="page active" id="page-home">
+ <div class="page-head"><div><div class="eyebrow">YOUR CREATIVE SPACE</div><h1>Workspace</h1><div class="subtitle">Write code. Build interfaces. Preview your ideas.</div></div><span class="pill">● SYSTEM ONLINE</span></div>
+ <div class="grid">
+  <div class="s12 panel hero"><div class="eyebrow">WELCOME TO NEXUSV1</div><h2>Build beyond the ordinary.</h2><p>A personal coding workspace for Roblox UI concepts and web projects, with your tools organized in one clean studio.</p><div class="toolbar"><button type="button" class="btn primary" data-go="editor">⌘ Open Editor</button><button type="button" class="btn" data-go="modes">◈ Choose a Mode</button></div></div>
+  <div class="s4 stat"><div class="stat-label">ACTIVE LANGUAGE</div><div class="stat-value" id="statLanguage">Luau</div><div class="green">Ready to edit</div></div>
+  <div class="s4 stat"><div class="stat-label">OPEN FILE</div><div class="stat-value" id="statFile">main.lua</div><div class="green">Local workspace</div></div>
+  <div class="s4 stat"><div class="stat-label">CODE LINES</div><div class="stat-value" id="statLines">0</div><div class="green">Current file</div></div>
+  <div class="s7 panel"><div class="panel-head"><h2>Quick Launch</h2><span class="pill">TOOLS</span></div><div class="panel-body grid"><div class="s6"><button type="button" class="btn" data-go="editor" style="width:100%">⌘ Code Editor</button><p class="tiny muted">Edit your scripts and pages.</p></div><div class="s6"><button type="button" class="btn" data-go="preview" style="width:100%">◫ Preview Project</button><p class="tiny muted">Inspect the rendered result.</p></div><div class="s6"><button type="button" class="btn" id="quickCopy" style="width:100%">▢ Copy Code</button></div><div class="s6"><button type="button" class="btn" id="quickDownload" style="width:100%">↓ Export File</button></div></div></div>
+  <div class="s5 panel"><div class="panel-head"><h2>Recent Activity</h2><span class="pill">LIVE</span></div><div class="console" id="homeActivity"></div></div>
+ </div>
+</section>
+<section class="page" role="tabpanel" id="page-editor">
+ <div class="page-head"><div><div class="eyebrow">DEVELOPMENT</div><h1>Code Editor</h1><div class="subtitle">Switch files, edit code, and run your preview.</div></div><div class="toolbar"><button type="button" class="btn" id="copyCode">▢ Copy</button><button type="button" class="btn" id="downloadCode">↓ Export</button><button type="button" class="btn primary" id="runCode">▶ Run</button></div></div>
+ <div class="panel"><div class="panel-head"><div><h2 id="editorTitle">main.lua</h2><div class="tiny muted">NexusV1 / Project / <span id="pathFile">main.lua</span></div></div><div class="toolbar"><span class="pill" id="langPill">LUAU</span><button type="button" class="btn" id="resetCode">Reset example</button></div></div>
+ <div class="filebar" id="fileTabs"><button type="button" class="file-tab active" data-file="main.lua">◈ main.lua</button><button type="button" class="file-tab" data-file="index.html">◇ index.html</button><button type="button" class="file-tab" data-file="style.css">◇ style.css</button><button type="button" class="file-tab" data-file="script.js">◇ script.js</button></div>
+ <div class="editor-area"><div id="lineNumbers">1</div><textarea id="code" spellcheck="false" wrap="off" aria-label="Code editor"></textarea></div>
+ <div class="editor-status"><span id="editorStatus">Ready</span><span id="lineStatus">1 line · UTF-8</span><span id="modeStatus">Roblox Luau</span></div></div>
+ <div class="panel" style="margin-top:14px"><div class="panel-head"><h2>Output Console</h2><button type="button" class="btn" id="clearConsole">Clear output</button></div><div class="console" id="console"></div></div>
+</section>
+<section class="page" role="tabpanel" id="page-preview">
+ <div class="page-head"><div><div class="eyebrow">VISUALIZATION</div><h1>Live Preview</h1><div class="subtitle">Inspect your web page or Roblox UI mockup.</div></div><div class="toolbar"><select id="previewSize" style="width:130px"><option value="100%">Responsive</option><option value="390px">Mobile</option><option value="768px">Tablet</option><option value="1000px">Desktop</option></select><button type="button" class="btn" id="refreshPreview">↻ Refresh</button><button type="button" class="btn" id="fullscreen">⛶ Fullscreen</button></div></div>
+ <div class="panel"><div class="panel-head"><h2>Rendered Output</h2><span class="pill" id="previewBadge">MOCK UI</span></div><div id="previewWrap"><iframe id="webPreview" class="preview-frame" title="Website preview" sandbox="allow-scripts"></iframe><div class="lua-preview" id="luaPreview"><div class="lua-card"><h2 id="mockTitle">NexusV1</h2><button id="mockButton">Click Me</button><p class="tiny muted" id="mockText">Roblox UI visual mockup</p></div></div></div></div>
+ <div class="panel" style="margin-top:14px"><div class="panel-head"><h2>Preview information</h2></div><div class="panel-body"><p class="subtitle" id="previewInfo">Choose a mode to begin.</p><p class="tiny muted">Web projects execute inside a sandboxed iframe. Luau is shown as a visual mockup and is not executed by the browser.</p></div></div>
+</section>
+<section class="page" role="tabpanel" id="page-modes">
+ <div class="page-head"><div><div class="eyebrow">ENVIRONMENTS</div><h1>Project Modes</h1><div class="subtitle">Select the type of project you want to work on.</div></div></div>
+ <div class="grid">
+  <div class="s4"><button type="button" class="mode-card selected" data-mode="lua"><div class="mode-icon">◆</div><span class="pill">ROBLOX</span><h2 style="margin-top:13px">Roblox Luau</h2><p>Write Luau scripts and preview representative Roblox-style interfaces.</p><span class="btn">Use Luau</span></button></div>
+  <div class="s4"><button type="button" class="mode-card" data-mode="html"><div class="mode-icon">⌘</div><span class="pill">WEB</span><h2 style="margin-top:13px">HTML / CSS / JS</h2><p>Build websites and interactive browser experiences with live rendering.</p><span class="btn">Use Web Mode</span></button></div>
+  <div class="s4"><button type="button" class="mode-card" data-mode="custom"><div class="mode-icon">⚙</div><span class="pill">PERSONAL</span><h2 style="margin-top:13px" id="customCardTitle">Custom Mode</h2><p>Create your own named workspace and edit its example code.</p><span class="btn">Use Custom Mode</span></button></div>
+  <div class="s12 panel"><div class="panel-head"><h2>Create a custom mode</h2></div><div class="panel-body"><div class="grid"><div class="s6 field"><label for="customModeName">Mode name</label><input id="customModeName" type="text" value="My Custom Mode"></div><div class="s6 field"><label for="customFileName">Default filename</label><input id="customFileName" type="text" value="custom.lua"></div><div class="s12"><button type="button" class="btn primary" id="createMode">Save and use custom mode</button></div></div></div></div>
+ </div>
+</section>
+<section class="page" role="tabpanel" id="page-settings">
+ <div class="page-head"><div><div class="eyebrow">PERSONALIZATION</div><h1>Settings</h1><div class="subtitle">Configure your workspace to fit your style.</div></div></div>
+ <div class="grid">
+  <div class="s6 panel"><div class="panel-head"><h2>Appearance</h2></div><div class="panel-body"><div class="field"><label for="siteName">Workspace title</label><input id="siteName" type="text" value="NexusV1"></div><div class="field"><label for="themeSelect">Color theme</label><select id="themeSelect"><option value="dark">Dark Space</option><option value="light">Light</option></select></div><div class="field"><label for="accentColor">Accent color</label><input id="accentColor" type="color" value="#438cff"></div><button type="button" class="btn primary" id="applyAppearance">Apply appearance</button></div></div>
+  <div class="s6 panel"><div class="panel-head"><h2>Editor preferences</h2></div><div class="panel-body"><div class="option-row"><div><b>Live reload</b><div class="tiny muted">Update preview as you type</div></div><input type="checkbox" id="liveReload" checked></div><div class="option-row"><div><b>Line numbers</b><div class="tiny muted">Show editor line numbering</div></div><input type="checkbox" id="showLines" checked></div><div class="option-row"><div><b>Word wrap</b><div class="tiny muted">Wrap long code lines</div></div><input type="checkbox" id="wordWrap"></div><div class="option-row"><div><b>Confirm reset</b><div class="tiny muted">Ask before resetting example code</div></div><input type="checkbox" id="confirmReset" checked></div></div></div>
+  <div class="s12 panel"><div class="panel-head"><h2>Project data</h2></div><div class="panel-body"><p class="subtitle">Settings are stored in this browser when saved. Export code files to keep a copy of your project.</p><div class="toolbar"><button type="button" class="btn" id="exportSettings">Export settings JSON</button><button type="button" class="btn" id="resetSettings">Reset settings</button></div><p class="tiny muted">Do not publish passwords, access tokens, or other private information.</p></div></div>
+ </div>
+</section>
+</main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+/* Standalone navigation fallback: independent of the rest of the app code. */
+(function () {
+  function switchNexusPage(page) {
+    var target = document.getElementById('page-' + page);
+    if (!target) return;
+    document.querySelectorAll('.page').forEach(function (panel) {
+      panel.classList.toggle('active', panel === target);
+      panel.style.display = panel === target ? 'block' : 'none';
+    });
+    document.querySelectorAll('.nav-link[data-page]').forEach(function (tab) {
+      var active = tab.getAttribute('data-page') === page;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-current', active ? 'page' : 'false');
+    });
+    if (page === 'preview' && typeof window.nexusRefreshPreview === 'function') window.nexusRefreshPreview();
+    if (page === 'editor' && typeof window.nexusRefreshEditor === 'function') window.nexusRefreshEditor();
+  }
+  document.addEventListener('click', function (event) {
+    var tab = event.target.closest && event.target.closest('.nav-link[data-page]');
+    if (!tab) return;
+    event.preventDefault();
+    switchNexusPage(tab.getAttribute('data-page'));
+  }, true);
+  window.nexusSwitchTab = switchNexusPage;
+  document.addEventListener('DOMContentLoaded', function () { switchNexusPage('home'); });
+})();
+</script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const defaults = {
+"main.lua": `-- NexusV1 | Roblox Luau UI Example
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "NexusV1"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.fromOffset(300, 180)
+frame.Position = UDim2.new(0.5, -150, 0.5, -90)
+frame.BackgroundColor3 = Color3.fromRGB(7, 17, 31)
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 65)
+title.BackgroundTransparency = 1
+title.Text = "NexusV1"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 28
+title.Parent = frame
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -40, 0, 42)
+button.Position = UDim2.new(0, 20, 0, 95)
+button.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+button.Text = "Click Me"
+button.TextColor3 = Color3.new(1, 1, 1)
+button.Parent = frame
+
+button.MouseButton1Click:Connect(function()
+    print("NexusV1 button clicked!")
+end)`,
+"index.html": `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NexusV1</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="card">
+  <h1>NexusV1</h1>
+  <p>Your ideas, live.</p>
+  <button id="demo">Click Me</button>
+  <p id="message"></p>
+</main>
+<script src="script.js"><\\/script>
+</body>
+</html>`,
+"style.css": `body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: Arial, sans-serif;
+  color: white;
+  background: radial-gradient(circle at top, #143c72, #050914 70%);
+}
+.card {
+  width: 280px;
+  padding: 28px;
+  border: 1px solid #438cff;
+  border-radius: 18px;
+  background: #07111f;
+  text-align: center;
+  box-shadow: 0 0 40px #087cff33;
+}
+button {
+  width: 100%;
+  padding: 13px;
+  color: white;
+  background: #087cff;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}`,
+"script.js": `document.getElementById("demo").addEventListener("click", () => {
+  document.getElementById("message").textContent = "It works!";
+});`
+};
+let files = {...defaults}, customCode = "", currentMode = "lua", activeFile = "main.lua", toastTimer;
+function notify(message){$("toast").textContent=message;$("toast").classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2200);}
+function log(message,type="info"){
+ const line=document.createElement("div");line.className="log-"+type;line.textContent="["+type.toUpperCase()+"] "+message;
+ $("console").append(line);$("homeActivity").append(line.cloneNode(true));$("console").scrollTop=$("console").scrollHeight;
+ while($("homeActivity").children.length>7)$("homeActivity").firstChild.remove();
+}
+function go(page){
+ const target = $("page-"+page);
+ if (!target) { notify("Could not open tab: "+page); return; }
+ document.querySelectorAll(".page").forEach(p=>{
+   const active = p === target;
+   p.classList.toggle("active", active);
+   p.setAttribute("aria-hidden", String(!active));
+ });
+ document.querySelectorAll(".nav-link").forEach(b=>{
+   const active = b.dataset.page === page;
+   b.classList.toggle("active", active);
+   b.setAttribute("aria-current", active ? "page" : "false");
+ });
+ if(page==="preview") renderPreview();
+ if(page==="editor") updateEditor();
+}
+// Robust delegated navigation: works even if buttons are re-rendered later.
+document.addEventListener("click", event => {
+ const nav = event.target.closest("[data-page]");
+ const shortcut = event.target.closest("[data-go]");
+ if (nav) {
+   event.preventDefault();
+   go(nav.dataset.page);
+ } else if (shortcut) {
+   event.preventDefault();
+   go(shortcut.dataset.go);
+ }
+});
+function modeName(){return currentMode==="lua"?"Roblox Luau":currentMode==="html"?"HTML / CSS / JS":($("customModeName").value.trim()||"Custom Mode");}
+function getCode(){return currentMode==="custom"?customCode:(files[activeFile]??"");}
+function setCode(value){if(currentMode==="custom")customCode=value;else files[activeFile]=value;}
+function updateLines(){
+ const count=$("code").value.split("\n").length;
+ $("lineNumbers").textContent=Array.from({length:count},(_,i)=>i+1).join("\n");
+ $("lineStatus").textContent=count+" lines · UTF-8";$("statLines").textContent=count;$("statFile").textContent=activeFile;
+}
+function updateEditor(){
+ $("code").value=getCode();$("editorTitle").textContent=activeFile;$("pathFile").textContent=activeFile;
+ $("langPill").textContent=currentMode==="lua"?"LUAU":currentMode==="html"?"WEB":"CUSTOM";
+ $("modeStatus").textContent=modeName();$("lineNumbers").style.display=$("showLines").checked?"block":"none";
+ $("code").style.whiteSpace=$("wordWrap").checked?"pre-wrap":"pre";
+ document.querySelectorAll("[data-file]").forEach(b=>b.classList.toggle("active",b.dataset.file===activeFile));
+ $("fileTabs").style.display=currentMode==="custom"?"none":"flex";
+ $("sideMode").textContent="Active: "+modeName();$("statLanguage").textContent=currentMode==="lua"?"Luau":currentMode==="html"?"Web":"Custom";
+ updateLines();
+}
+window.nexusRefreshEditor = updateEditor;
+function setMode(mode){
+ currentMode=mode;
+ if(mode==="lua")activeFile="main.lua";
+ else if(mode==="html")activeFile="index.html";
+ else {activeFile=$("customFileName").value.trim()||"custom.lua";if(!customCode)customCode="-- "+modeName()+"\nprint(\"Welcome to your custom workspace!\")";}
+ document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("selected",b.dataset.mode===mode));
+ updateEditor();renderPreview();go("editor");log("Mode changed to "+modeName()+".","success");
+}
+document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
+document.querySelectorAll("[data-file]").forEach(b=>b.addEventListener("click",()=>{
+ if(currentMode==="custom")return;
+ activeFile=b.dataset.file;currentMode=activeFile==="main.lua"?"lua":"html";
+ document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("selected",x.dataset.mode===currentMode));
+ updateEditor();renderPreview();
+}));
+$("code").addEventListener("input",()=>{
+ setCode($("code").value);updateLines();$("editorStatus").textContent="Edited";
+ if($("liveReload").checked){clearTimeout(window.nexusTimer);window.nexusTimer=setTimeout(renderPreview,250);}
+});
+$("code").addEventListener("scroll",()=>$("lineNumbers").scrollTop=$("code").scrollTop);
+$("code").addEventListener("keydown",e=>{
+ if(e.key==="Tab"){e.preventDefault();const start=e.target.selectionStart,end=e.target.selectionEnd;e.target.setRangeText("  ",start,end,"end");setCode(e.target.value);updateLines();}
+ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();run();}
+});
+function combinedHTML(){
+ const html=files["index.html"],css=files["style.css"],js=files["script.js"];
+ const cssSafe=css.replace(/<\/style/gi,"<\\/style");
+ const jsSafe=js.replace(/<\/script/gi,"<\\/script");
+ const withCSS=html.replace(/<link\b[^>]*href=["']style\.css["'][^>]*>/i,"<style>"+cssSafe+"</style>");
+ return withCSS.replace(/<script\b[^>]*src=["']script\.js["'][^>]*>\s*<\/script>/i,"<script>"+jsSafe+"</scr"+"ipt>");
+}
+function renderPreview(){
+ const web=currentMode==="html";$("webPreview").style.display=web?"block":"none";$("luaPreview").style.display=web?"none":"flex";
+ $("previewBadge").textContent=web?"WEB PREVIEW":"MOCK UI";
+ $("previewInfo").textContent=web?"Rendering index.html with your current style.css and script.js.":"Visual mockup for "+modeName()+". Roblox Luau is not executed in this browser.";
+ if(web){$("webPreview").srcdoc=combinedHTML();}
+ else{
+  const code=getCode(),title=code.match(/title\.Text\s*=\s*["']([^"']*)/),button=code.match(/button\.Text\s*=\s*["']([^"']*)/);
+  $("mockTitle").textContent=title?title[1]:($("siteName").value||"NexusV1");
+  $("mockButton").textContent=button?button[1]:"Click Me";$("mockText").textContent="Visual mockup · "+modeName();
+ }
+ const size=$("previewSize").value;$("webPreview").style.width=size;$("luaPreview").style.maxWidth=size;
+}
+window.nexusRefreshPreview = renderPreview;
+function run(){setCode($("code").value);renderPreview();$("editorStatus").textContent="Preview refreshed";log(currentMode==="html"?"Web preview refreshed.":"Mock preview refreshed; Luau is not executed.","success");}
+$("runCode").addEventListener("click",run);$("topRun").addEventListener("click",()=>{run();go("preview")});$("refreshPreview").addEventListener("click",run);
+$("mockButton").addEventListener("click",()=>{$("mockText").textContent="Preview button clicked!";log("Mock preview button clicked.","success");});
+$("previewSize").addEventListener("change",renderPreview);
+$("fullscreen").addEventListener("click",async()=>{try{const target=currentMode==="html"?$("webPreview"):$("luaPreview");if(!document.fullscreenElement)await target.requestFullscreen();else await document.exitFullscreen();}catch{notify("Fullscreen is unavailable in this browser.");}});
+async function copyCode(){
+ try{await navigator.clipboard.writeText(getCode());notify("Code copied to clipboard.");}
+ catch{$("code").focus();$("code").select();notify("Clipboard blocked. Code selected for manual copying.");}
+}
+function downloadFile(name,text,type="text/plain"){
+ const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportCurrent(){const name=currentMode==="html"?"index.html":activeFile;downloadFile(name,currentMode==="html"?combinedHTML():getCode(),name.endsWith(".html")?"text/html":"text/plain");notify("File exported.");}
+$("copyCode").addEventListener("click",copyCode);$("quickCopy").addEventListener("click",copyCode);
+$("downloadCode").addEventListener("click",exportCurrent);$("quickDownload").addEventListener("click",exportCurrent);
+$("resetCode").addEventListener("click",()=>{
+ if($("confirmReset").checked&&!confirm("Reset this example file? Your current edits will be lost."))return;
+ if(currentMode==="custom")customCode="";else files[activeFile]=defaults[activeFile]||"";
+ updateEditor();renderPreview();log("Example reset.","success");
+});
+$("clearConsole").addEventListener("click",()=>$("console").replaceChildren());
+$("themeBtn").addEventListener("click",()=>{document.body.classList.toggle("light");$("themeSelect").value=document.body.classList.contains("light")?"light":"dark";});
+$("applyAppearance").addEventListener("click",()=>{
+ const name=$("siteName").value.trim()||"NexusV1";$("siteName").value=name;
+ const strong=document.querySelector(".brand strong");strong.textContent=name+" Studio";
+ document.documentElement.style.setProperty("--blue",$("accentColor").value);document.documentElement.style.setProperty("--cyan",$("accentColor").value);
+ document.body.classList.toggle("light",$("themeSelect").value==="light");notify("Appearance applied.");
+});
+$("themeSelect").addEventListener("change",()=>document.body.classList.toggle("light",$("themeSelect").value==="light"));
+$("showLines").addEventListener("change",()=>$("lineNumbers").style.display=$("showLines").checked?"block":"none");
+$("wordWrap").addEventListener("change",()=>$("code").style.whiteSpace=$("wordWrap").checked?"pre-wrap":"pre");
+$("createMode").addEventListener("click",()=>{
+ const name=$("customModeName").value.trim()||"My Custom Mode";let file=$("customFileName").value.trim()||"custom.lua";
+ if(!/^[a-zA-Z0-9_.-]+$/.test(file)){notify("Use a simple filename without spaces.");return;}
+ $("customModeName").value=name;$("customFileName").value=file;$("customCardTitle").textContent=name;
+ if(!customCode)customCode="-- "+name+"\nprint(\"Hello from "+name.replace(/["\\]/g,"")+"!\")";
+ setMode("custom");
+});
+function saveSettings(){
+ const data={siteName:$("siteName").value,theme:$("themeSelect").value,accent:$("accentColor").value,liveReload:$("liveReload").checked,showLines:$("showLines").checked,wordWrap:$("wordWrap").checked,confirmReset:$("confirmReset").checked,customModeName:$("customModeName").value,customFileName:$("customFileName").value};
+ try{localStorage.setItem("nexusStudioSettings",JSON.stringify(data));notify("Settings saved in this browser.");}catch{notify("Browser storage is unavailable.");}
+}
+$("saveBtn").addEventListener("click",saveSettings);
+$("exportSettings").addEventListener("click",()=>downloadFile("nexus-settings.json",JSON.stringify({siteName:$("siteName").value,theme:$("themeSelect").value,accent:$("accentColor").value},null,2),"application/json"));
+$("resetSettings").addEventListener("click",()=>{if(confirm("Reset settings and reload?")){try{localStorage.removeItem("nexusStudioSettings");}catch{}location.reload();}});
+try{
+ const s=JSON.parse(localStorage.getItem("nexusStudioSettings")||"null");
+ if(s){
+  $("siteName").value=s.siteName||"NexusV1";$("themeSelect").value=s.theme||"dark";$("accentColor").value=s.accent||"#438cff";
+  $("liveReload").checked=s.liveReload!==false;$("showLines").checked=s.showLines!==false;$("wordWrap").checked=!!s.wordWrap;$("confirmReset").checked=s.confirmReset!==false;
+  $("customModeName").value=s.customModeName||"My Custom Mode";$("customFileName").value=s.customFileName||"custom.lua";
+  document.body.classList.toggle("light",s.theme==="light");document.documentElement.style.setProperty("--blue",$("accentColor").value);document.documentElement.style.setProperty("--cyan",$("accentColor").value);
+ }
+}catch{}
+$("customCardTitle").textContent=$("customModeName").value;
+go("home");
+updateEditor();renderPreview();log("NexusV1 Studio loaded successfully.","success");
+window.addEventListener("error", event => { try { log("JavaScript error: " + (event.message || "Unknown error"), "error"); } catch {} });
+})();
+</script>
+</body>
+</html>
